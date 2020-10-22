@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import * as OSS from 'ali-oss';
 
@@ -19,7 +19,7 @@ export class AlicloudOssService {
     Logger.log('Alicloud OSS module initialized!', 'AlicloudOssModule');
   }
 
-  async upload(file: UploadedFileMetadata, options?: OSS.PutObjectOptions): Promise<string> {
+  async upload(file: UploadedFileMetadata, options?: OSS.PutObjectOptions): Promise<string | Error> {
     try {
       if (file.bucket && !this.clients[file.bucket]) {
         const config = { ...this.config.options, bucket: file.bucket };
@@ -35,7 +35,15 @@ export class AlicloudOssService {
       Logger.log(`Object "${filename}" uploaded successfully`, 'AlicloudOssModule');
       return file.url;
     } catch (err) {
-      throw new Error(err);
+      return new Error(err);
     }
+  }
+
+  async downloadUrl(path: string, options?: OSS.SignatureUrlOptions): Promise<string | Error> {
+    const result = await this.defaultClient.get(path);
+    if (result.res.status === 200) {
+      return this.defaultClient.signatureUrl(path, options);
+    }
+    return new Error('Object not exist');
   }
 }
