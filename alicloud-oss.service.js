@@ -29,9 +29,10 @@ let AlicloudOssService = class AlicloudOssService {
     constructor(config) {
         this.config = config;
         this.clients = {};
+        this.logger = new common_1.Logger(this.constructor.name);
         this.clients[config.options.bucket] = new OSS(config.options);
         this.defaultClient = this.clients[config.options.bucket];
-        common_1.Logger.log('Alicloud OSS module initialized!', 'AlicloudOssModule');
+        this.logger.log('Alicloud OSS module initialized!', 'AlicloudOssModule');
     }
     upload(file, options) {
         var _a;
@@ -46,7 +47,7 @@ let AlicloudOssService = class AlicloudOssService {
                 const path = file.folder ? `${file.folder}/${filename}` : filename;
                 const uploadResponse = yield client.put(path, file.buffer, options);
                 file.url = uploadResponse.url;
-                common_1.Logger.log(`Object "${filename}" uploaded successfully`, 'AlicloudOssModule');
+                this.logger.log(`Object "${filename}" uploaded successfully`, 'AlicloudOssModule');
                 return file.url;
             }
             catch (err) {
