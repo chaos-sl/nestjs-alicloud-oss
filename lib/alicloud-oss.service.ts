@@ -10,13 +10,15 @@ export class AlicloudOssService {
   private clients: { [key: string]: OSS } = {};
   private defaultClient: OSS;
 
+  logger = new Logger(this.constructor.name);
+
   constructor(
     @Inject(ALICLOUD_OSS_MODULE_CONFIG)
     private readonly config: AlicloudOssConfig,
   ) {
     this.clients[config.options.bucket] = new OSS(config.options);
     this.defaultClient = this.clients[config.options.bucket];
-    Logger.log('Alicloud OSS module initialized!', 'AlicloudOssModule');
+    this.logger.log('Alicloud OSS module initialized!', 'AlicloudOssModule');
   }
 
   async upload(file: UploadedFileMetadata, options?: OSS.PutObjectOptions): Promise<string | Error> {
@@ -32,7 +34,7 @@ export class AlicloudOssService {
 
       const uploadResponse = await client.put(path, file.buffer, options);
       file.url = uploadResponse.url;
-      Logger.log(`Object "${filename}" uploaded successfully`, 'AlicloudOssModule');
+      this.logger.log(`Object "${filename}" uploaded successfully`, 'AlicloudOssModule');
       return file.url;
     } catch (err) {
       return new Error(err);
